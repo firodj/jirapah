@@ -1,0 +1,3 @@
+class JiraCard
+
+end
