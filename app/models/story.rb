@@ -6,4 +6,5 @@ class Story < ApplicationRecord
   belongs_to :qa_tester, class_name: Member.to_s, optional: true
   belongs_to :pair_assignee, class_name: Member.to_s, optional: true
   has_many :change_logs
+  has_many :comments
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_03_17_031327) do
+ActiveRecord::Schema.define(version: 2020_03_17_045719) do
 
   create_table "change_logs", force: :cascade do |t|
     t.string "guid"
@@ -21,6 +21,19 @@ ActiveRecord::Schema.define(version: 2020_03_17_031327) do
     t.index ["author_id"], name: "index_change_logs_on_author_id"
     t.index ["guid"], name: "index_change_logs_on_guid", unique: true
     t.index ["story_id"], name: "index_change_logs_on_story_id"
+  end
+
+  create_table "comments", force: :cascade do |t|
+    t.string "guid"
+    t.integer "story_id"
+    t.integer "author_id"
+    t.integer "editor_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.index ["author_id"], name: "index_comments_on_author_id"
+    t.index ["editor_id"], name: "index_comments_on_editor_id"
+    t.index ["guid"], name: "index_comments_on_guid", unique: true
+    t.index ["story_id"], name: "index_comments_on_story_id"
   end
 
   create_table "members", force: :cascade do |t|
@@ -51,6 +64,8 @@ ActiveRecord::Schema.define(version: 2020_03_17_031327) do
   end
 
   add_foreign_key "change_logs", "members", column: "author_id"
+  add_foreign_key "comments", "members", column: "author_id"
+  add_foreign_key "comments", "members", column: "editor_id"
   add_foreign_key "stories", "members", column: "assignee_id"
   add_foreign_key "stories", "members", column: "creator_id"
   add_foreign_key "stories", "members", column: "pair_assignee_id"

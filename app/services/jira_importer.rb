@@ -6,6 +6,8 @@ class JiraImporter
 
   def search(params)
     start_at = params[:start_at]
+    resolved = params[:resolved] || false
+    limit = params[:limit] || PAGING
 
     project_keys = [*params[:project_keys]]
     raise ArgumentError, 'project_keys is required' if project_keys.empty?
@@ -14,10 +16,16 @@ class JiraImporter
 
     jql = "project IN (#{project_keys.join(', ')})"
     jql += " AND labels IN (#{labels.join(', ')})" unless labels.empty?
-    jql += " AND resolution = Unresolved"
+
+    if resolved
+      jql += " AND resolution != Unresolved"
+    else
+      jql += " AND resolution = Unresolved"
+    end
+
     jql += " ORDER BY updated ASC, id ASC"
 
-    client.Issue.jql(jql, start_at: start_at, max_results: PAGING + 1)
+    client.Issue.jql(jql, start_at: start_at, max_results: limit)
   end
 
   def client
@@ -43,6 +51,25 @@ class JiraImporter
         story.save!
 
         process_changelogs(issue)
+      end
+
+      process_comments(issue)
+    end
+  end
+
+  def process_comments(issue)
+    story = Story.find_by_guid!(issue.id)
+
+    issue.comments.each do |jira_comment|
+      comment = Comment.find_or_initialize_by(guid: jira_comment.id)
+      if comment.updated_at != jira_comment.updated
+        comment.guid = jira_comment.id
+        comment.author = assign_member(jira_comment.author)
+        comment.editor = assign_member(jira_comment.editor)
+        comment.updated_at = jira_comment.updated
+        comment.created_at = jira_comment.created
+        comment.story = story
+        comment.save!
       end
     end
   end
