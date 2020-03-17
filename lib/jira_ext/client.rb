@@ -1,7 +1,7 @@
 require_relative './changelog.rb'
 
 JIRA::Client.class_eval {
-  def ChangeLog # :nodoc:
+  def Changelog # :nodoc:
     JIRA::Resource::ChangelogFactory.new(self)
   end
 }
