@@ -8,6 +8,7 @@ JIRA::Resource::Issue.class_eval {
                           attribute_key: 'customfield_11700'
   has_one :qa_tester,     class: JIRA::Resource::User,
                           attribute_key: 'customfield_11806'
+  has_one :resolution,    nested_under: 'fields'
 
   def epic_link
     @attrs['fields']['customfield_10008'] if @attrs && @attrs['fields']
