@@ -10,16 +10,24 @@ namespace :custom do
 
   desc "Get last JIRA withih days ago"
   task :jira_latest, [:ago] => :environment do |task, args|
-    if args.ago.empty?
-      puts "Please provide the days `ago`"
+    if args.ago.blank?
+      puts "Please provide the days: " + Rainbow("`ago`").red + " or " + Rainbow("'begin'").yellow
       exit 1
     end
 
-    updated_at = Time.now.beginning_of_day - args.ago.to_i.days
+    if args.ago == 'begin'
+      updated_at = JiraImporter::BEGIN_DATE
+    else
+      updated_at = Time.now.beginning_of_day - args.ago.to_i.days
+    end
 
     svc = JiraImporter.new
 
     svc.chunk(project_keys: "GLB", resolved: false, updated_at: updated_at) do |issues|
+      svc.process(issues)
+    end
+
+    svc.chunk(project_keys: "GLB", resolved: true, updated_at: updated_at) do |issues|
       svc.process(issues)
     end
   end

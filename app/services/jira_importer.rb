@@ -1,6 +1,7 @@
 class JiraImporter
-  PAGING = 10.freeze
+  PAGING = 100.freeze
   BEGIN_DATE = '2020-01-01T00:00:00.000+0700'.freeze
+  FIXME = false.freeze
 
   def initialize
   end
@@ -73,7 +74,8 @@ class JiraImporter
   def process(issues)
     issues.each do |issue|
       story = Story.find_or_initialize_by(guid: issue.id)
-      if story.updated_at != issue.updated
+
+      if story.updated_at != issue.updated or FIXME
         story.guid = issue.id
         story.key = issue.key
         story.summary = issue.summary
@@ -106,12 +108,20 @@ class JiraImporter
           story.status_guid = nil
         end
 
+        if issue.issuetype
+          story.kind = issue.issuetype.name
+          story.kind_guid = issue.issuetype.id
+        else
+          story.kind = nil
+          story.kind_guid = nil
+        end
+
         story.save!
 
-        process_changelogs(issue)
+        process_changelogs(issue) unless FIXME
       end
 
-      process_comments(issue)
+      process_comments(issue) unless FIXME
     end
   end
 

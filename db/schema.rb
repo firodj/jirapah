@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_03_17_045719) do
+ActiveRecord::Schema.define(version: 2020_03_18_042210) do
 
   create_table "change_logs", force: :cascade do |t|
     t.string "guid"
@@ -62,6 +62,8 @@ ActiveRecord::Schema.define(version: 2020_03_17_045719) do
     t.datetime "resolved_at"
     t.datetime "updated_at"
     t.datetime "created_at"
+    t.string "kind"
+    t.string "kind_guid"
     t.index ["assignee_id"], name: "index_stories_on_assignee_id"
     t.index ["creator_id"], name: "index_stories_on_creator_id"
     t.index ["guid"], name: "index_stories_on_guid", unique: true
