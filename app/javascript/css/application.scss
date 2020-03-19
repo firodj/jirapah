@@ -1,0 +1,27 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+.border-b-yellow-400 {
+  border-bottom-color: theme('colors.yellow.400');
+}
+
+.border-t-yellow-100 {
+  border-top-color: theme('colors.yellow.100');
+}
+
+.border-b-gray-400 {
+  border-bottom-color: theme('colors.gray.400');
+}
+
+.border-t-gray-100 {
+  border-top-color: theme('colors.gray.100');
+}
+
+.border-b-green-400 {
+  border-bottom-color: theme('colors.green.400');
+}
+
+.border-t-green-100 {
+  border-top-color: theme('colors.green.100');
+}
