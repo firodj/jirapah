@@ -1,0 +1,8 @@
+<div class="mt-1 ml-1 inline-flex">
+<% story.labels.each do |label| %>
+  <a href="#" class="inline-block text-2xs mr-1 leading-none text-purple-700 font-bold"><%= label %></a>
+<% end %>
+<% story.tags.each do |tag| %>
+  <a href="#" class="inline-block text-2xs mr-1 leading-none text-purple-700 font-bold"><%= tag %></a>
+<% end %>
+</div>

@@ -1,0 +1,11 @@
+<div class="max-w-sm flex flex-col">
+  <% @stories.each do |story| %>
+    <% if story.done? %>
+      <%= render 'story_done', story: story %>
+    <% elsif story.inprogress? || story.testing? || story.ready? %>
+      <%= render 'story_inprogress', story: story %>
+    <% else %>
+      <%= render 'story_todo', story: story %>
+    <% end %>
+  <% end %>
+</div>

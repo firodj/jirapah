@@ -1,0 +1,10 @@
+<div class="w-full flex bg-green-200 border-b border-b-green-400 border-t border-t-green-100">
+  <div class="w-1/6 p-1 text-xs">
+    <%= story.changed_at.strftime('%b-%d') %><br />
+    <%= story.changed_at.strftime('%H:%M') %>
+  </div>
+  <div class="w-5/6 p-1 text-xs leading-tight">
+    <%= story.clean_summary %>
+    <%= render 'labels', story: story %>
+  </div>
+</div>
