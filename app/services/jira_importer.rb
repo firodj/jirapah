@@ -89,7 +89,7 @@ class JiraImporter
         story.pair_assignee = assign_member(issue.pair_assignee) # customfield_11700
         story.qa_tester = assign_member(issue.qa_tester) # customfield_11806
         story.project_guid = issue.project.key
-        story.labels = issue.labels.to_json
+        story.labels = issue.labels
         story.resolved_at = issue.resolutiondate
 
         if issue.resolution
