@@ -54,6 +54,14 @@ class Story < ApplicationRecord
     @clean_summary
   end
 
+  def assignee_names
+    return @assignee_names unless @assignee_names.nil?
+    names = []
+    names.push(assignee.name) if assignee
+    names.push(pair_assignee.name) if pair_assignee
+    @assignee_names = names.uniq
+  end
+
   private
     def parse_tags
       return unless @tags.nil? or @clean_summary.nil?
