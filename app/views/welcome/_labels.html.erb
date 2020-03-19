@@ -1,8 +1,8 @@
-<div class="mt-1 ml-1 inline-flex">
-<% story.labels.each do |label| %>
-  <a href="#" class="inline-block text-2xs mr-1 leading-none text-purple-700 font-bold"><%= label %></a>
+<div class="p-0">
+<% story.labels.each_with_index do |label, index| %>
+  <a href="#" class="inline-block rounded border-purple-500 border p-px m-0 text-3xs leading-none text-purple-700 font-bold"><%= label %></a>
 <% end %>
-<% story.tags.each do |tag| %>
-  <a href="#" class="inline-block text-2xs mr-1 leading-none text-purple-700 font-bold"><%= tag %></a>
+<% story.tags.each_with_index do |tag, index| %>
+  <a href="#" class="inline-block rounded border-green-500 border p-px m-0 text-3xs leading-none text-green-700 font-bold"><%= tag %></a>
 <% end %>
 </div>

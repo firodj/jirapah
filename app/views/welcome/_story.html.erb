@@ -1,0 +1,25 @@
+
+<div class="w-full flex bg-<%= color %>-200 border-b border-b-<%= color %>-400 border-t border-t-<%= color %>-100">
+  <div class="w-1/6 p-1 text-xs">
+    <%= story.changed_at.localtime.strftime('%b-%d') %><br />
+    <%= story.changed_at.localtime.strftime('%H:%M') %>
+  </div>
+  <div class="w-5/6 p-1 text-xs leading-tight">
+    <% unless story.done? %>
+    <div class="float-right mt-1 ml-1 inline-flex">
+      <% if story.ready? %>
+        <a href="#" class="inline-block text-2xs px-2 py-1 leading-none rounded text-white bg-orange-600 hover:bg-orange-400">Deliver</a>
+      <% elsif story.inprogress? %>
+        <a href="#" class="inline-block text-2xs px-2 py-1 leading-none rounded text-white bg-blue-700 hover:bg-blue-500">Finish</a>
+      <% elsif story.testing? %>
+        <a href="#" class="inline-block text-2xs mr-1 px-2 py-1 leading-none rounded text-white bg-green-800 hover:bg-green-600">Accept</a>
+        <a href="#" class="inline-block text-2xs px-2 py-1 leading-none rounded text-white bg-red-800 hover:bg-red-600">Reject</a>
+      <% else %>
+        <a href="#" class="inline-block text-2xs px-2 py-1 leading-none rounded text-white bg-gray-500 hover:bg-gray-400">Start</a>
+      <% end %>
+    </div>
+    <% end %>
+    <%= story.clean_summary %>
+    <%= render 'labels', story: story %>
+  </div>
+</div>

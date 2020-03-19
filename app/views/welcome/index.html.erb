@@ -1,11 +1,14 @@
 <div class="max-w-sm flex flex-col">
   <% @stories.each do |story| %>
-    <% if story.done? %>
-      <%= render 'story_done', story: story %>
-    <% elsif story.inprogress? || story.testing? || story.ready? %>
-      <%= render 'story_inprogress', story: story %>
-    <% else %>
-      <%= render 'story_todo', story: story %>
-    <% end %>
+    <%
+    if story.done?
+      color = 'green'
+    elsif story.inprogress? || story.testing? || story.ready?
+      color = 'yellow'
+    else
+      color = 'gray'
+    end
+    %>
+    <%= render 'story', story: story, color: color %>
   <% end %>
 </div>
