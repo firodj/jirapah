@@ -75,14 +75,14 @@ class JiraImporter
     issues.each do |issue|
       story = Story.find_or_initialize_by(guid: issue.id)
 
-      if story.updated_at != issue.updated or FIXME
+      if story.changed_at != issue.updated or FIXME
         story.guid = issue.id
         story.key = issue.key
         story.summary = issue.summary
         story.epic_link = issue.customfield_10008
         story.story_point = issue.customfield_10005
-        story.updated_at = issue.updated
-        story.created_at = issue.created
+        story.changed_at = issue.updated
+        story.posted_at = issue.created
         story.creator = assign_member(issue.creator)
         story.reporter = assign_member(issue.reporter)
         story.assignee = assign_member(issue.assignee)
@@ -130,12 +130,12 @@ class JiraImporter
 
     issue.comments.each do |jira_comment|
       comment = Comment.find_or_initialize_by(guid: jira_comment.id)
-      if comment.updated_at != jira_comment.updated
+      if comment.changed_at != jira_comment.updated
         comment.guid = jira_comment.id
         comment.author = assign_member(jira_comment.author)
         comment.editor = assign_member(jira_comment.editor)
-        comment.updated_at = jira_comment.updated
-        comment.created_at = jira_comment.created
+        comment.changed_at = jira_comment.updated
+        comment.posted_at = jira_comment.created
         comment.story = story
         comment.save!
       end
@@ -148,7 +148,7 @@ class JiraImporter
     issue.changelogs.all.each do |changelog|
       ChangeLog.find_or_create_by(guid: changelog.id) do |change_log|
         change_log.author = assign_member(changelog.author)
-        change_log.created_at = changelog.created
+        change_log.changed_at = changelog.created
         change_log.story = story
         change_log.description = parse_changelog_items(changelog.items)
       end
