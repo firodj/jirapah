@@ -18,8 +18,10 @@ class CreateStories < ActiveRecord::Migration[6.0]
       t.string :resolution
       t.string :resolution_guid
       t.datetime :resolved_at
-      t.datetime :updated_at
-      t.datetime :created_at
+      t.datetime :changed_at
+      t.datetime :posted_at
+      t.string :kind
+      t.string :kind_guid
 
       t.index :guid, unique: true
     end

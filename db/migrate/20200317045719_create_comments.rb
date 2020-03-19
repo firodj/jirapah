@@ -6,8 +6,8 @@ class CreateComments < ActiveRecord::Migration[6.0]
       t.references :author, foreign_key: {to_table: :members}
       t.references :editor, foreign_key: {to_table: :members}
 
-      t.datetime :created_at
-      t.datetime :updated_at
+      t.datetime :posted_at
+      t.datetime :changed_at
 
       t.index :guid, unique: true
     end

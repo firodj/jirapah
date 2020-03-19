@@ -10,14 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_03_18_042210) do
+ActiveRecord::Schema.define(version: 2020_03_17_045719) do
 
   create_table "change_logs", force: :cascade do |t|
     t.string "guid"
     t.integer "story_id"
     t.integer "author_id"
     t.text "description"
-    t.datetime "created_at"
+    t.datetime "changed_at"
     t.index ["author_id"], name: "index_change_logs_on_author_id"
     t.index ["guid"], name: "index_change_logs_on_guid", unique: true
     t.index ["story_id"], name: "index_change_logs_on_story_id"
@@ -28,8 +28,8 @@ ActiveRecord::Schema.define(version: 2020_03_18_042210) do
     t.integer "story_id"
     t.integer "author_id"
     t.integer "editor_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "posted_at"
+    t.datetime "changed_at"
     t.index ["author_id"], name: "index_comments_on_author_id"
     t.index ["editor_id"], name: "index_comments_on_editor_id"
     t.index ["guid"], name: "index_comments_on_guid", unique: true
@@ -60,8 +60,8 @@ ActiveRecord::Schema.define(version: 2020_03_18_042210) do
     t.string "resolution"
     t.string "resolution_guid"
     t.datetime "resolved_at"
-    t.datetime "updated_at"
-    t.datetime "created_at"
+    t.datetime "changed_at"
+    t.datetime "posted_at"
     t.string "kind"
     t.string "kind_guid"
     t.index ["assignee_id"], name: "index_stories_on_assignee_id"
