@@ -1,14 +1,21 @@
-<div class="max-w-sm flex flex-col">
-  <% @stories.each do |story| %>
-    <%
-    if story.done?
-      color = 'green'
-    elsif story.inprogress? || story.testing? || story.ready?
-      color = 'yellow'
-    else
-      color = 'gray'
-    end
-    %>
-    <%= render 'story', story: story, color: color %>
+<div class="flex flex-row">
+  <% @columns.each do |column| %>
+  <div class="w-1/3 flex flex-col h-screen overflow-auto mr-2">
+    <div class="text-sm bg-gray-800 text-white py-1 px-2">
+      <%= column[:title] %>
+    </div>
+    <% column[:stories].each do |story| %>
+      <%
+      if story.done?
+        color = 'green'
+      elsif story.inprogress? || story.testing? || story.ready?
+        color = 'yellow'
+      else
+        color = 'gray'
+      end
+      %>
+      <%= render 'story', story: story, color: color %>
+    <% end %>
+  </div>
   <% end %>
 </div>

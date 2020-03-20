@@ -8,6 +8,9 @@ class Story < ApplicationRecord
   has_many :change_logs
   has_many :comments
   attribute :labels, :json
+  scope :assigned_to, ->(filter_members) { where(assignee_id: filter_members).or(where(pair_assignee_id: filter_members)) }
+
+  ST_DONE = %w[12801].freeze
 
   def done?
     internal_status == :done
@@ -39,7 +42,7 @@ class Story < ApplicationRecord
       :testing
     when '12002'
       :ready
-    when '12801'
+    when *ST_DONE
       :done
     end
   end
