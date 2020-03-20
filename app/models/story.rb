@@ -1,5 +1,6 @@
 class Story < ApplicationRecord
   validates_presence_of :guid
+
   belongs_to :creator, class_name: Member.to_s, optional: true
   belongs_to :assignee, class_name: Member.to_s, optional: true
   belongs_to :reporter, class_name: Member.to_s, optional: true
@@ -7,10 +8,16 @@ class Story < ApplicationRecord
   belongs_to :pair_assignee, class_name: Member.to_s, optional: true
   has_many :change_logs
   has_many :comments
+
   attribute :labels, :json
-  scope :assigned_to, ->(filter_members) { where(assignee_id: filter_members).or(where(pair_assignee_id: filter_members)) }
 
   ST_DONE = %w[12801].freeze
+  ST_TODO = %w[10000 10401 10604].freeze
+
+  scope :assigned_to, ->(filter_members) { where("assignee_id in (?) or pair_assignee_id in (?)", filter_members, filter_members) }
+  scope :unassigned_to, ->(filter_members) { where("assignee_id not in (?) or assignee_id is null", filter_members)
+    .where("pair_assignee_id not in (?) or pair_assignee_id is null", filter_members) }
+  scope :todo, -> { where(status_guid: ST_TODO) }
 
   def done?
     internal_status == :done
