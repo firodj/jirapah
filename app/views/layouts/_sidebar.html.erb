@@ -1,4 +1,4 @@
-<div class="bg-indigo-900 text-purple-lighter flex-none w-64 pb-6">
+<div class="bg-indigo-900 text-purple-lighter flex-none w-2/12 pb-6">
   <div class="text-white mb-2 mt-3 px-4 flex justify-between">
     <div class="flex-auto">
       <h1 class="font-semibold text-xl leading-tight mb-1 truncate">Jirapah</h1>
@@ -22,5 +22,17 @@
     </div>
     <% end %>
     <% end %>
+
+    <div class="px-4 mb-2 mt-4 text-white flex justify-between items-center">
+      <div class="text-sm">
+        <a href="<%= url_for(action: 'index', filter_members: @filter_members.join(',')) %>" class="<%= params[:action] == 'index' ? 'text-white' : 'opacity-75' %>">Iteration</a>
+      </div>
+    </div>
+
+    <div class="px-4 mb-2 text-white flex justify-between items-center">
+      <div class="text-sm">
+        <a href="<%= url_for(action: 'timeline', filter_members: @filter_members.join(',')) %>" class="<%= params[:action] == 'timeline' ? 'text-white' : 'opacity-75' %>">Timeline</a>
+      </div>
+    </div>
   </div>
 </div>

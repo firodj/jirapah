@@ -1,0 +1,68 @@
+<div class="h-screen flex flex-row overflow-auto">
+  <div id="leftside" class="w-2/12">
+    <div class="h-6"></div>
+    <div class="h-6"></div>
+    <% @cards.each do |card| %>
+    <div class="box-border h-6 text-3xs flex-inline border-b overflow-hidden">
+      <span class="bg-teal-200">[<%= card[:key] %>]</span> <span><%= card[:summary] %></span>
+    </div>
+    <% end %>
+  </div>
+  <div id="timeline" class="w-10/12 h-screen flex flex-col relative">
+    <div id="items" class="absolute z-10">
+      <div class="h-6"></div>
+      <div class="h-6"></div>
+      <% @cards.each do |card| %>
+      <div class="h-6">
+        <% card[:cells].each do |d, values| %>
+          <%
+          when_resolved = values.find { |v| v[:status] == :resolved }
+          when_updated = values.find { |v| v[:status] == :updated }
+          when_posted = values.find { |v| v[:status] == :posted }
+          if when_resolved
+            current = when_resolved
+          elsif when_posted
+            current = when_posted
+          elsif when_updated
+            current = when_updated
+          else
+            current = values.first
+          end
+          color = "bg-%s" % [current[:color]]
+          text = [*current[:names]].map{ |name| initials(name) }.join(', ')
+          title = [*current[:names]].join(', ')
+          left = "%dpx" % [d * 40]
+          %>
+          <div class="rounded h-6 <%= color %> text-3xs absolute flex justify-center items-center p-1" style="left: <%= left %>; width: 40px"
+            title="<%= title %>"><%= text %></div>
+        <% end %>
+      </div>
+      <% end %>
+    </div>
+
+    <div id="grids" class="absolute z-0">
+      <div class="flex flex-row">
+        <% height = "%.3frem" % [1.5 * @cards.count] %>
+        <% @lines.each do |line| %>
+        <div class="flex flex-col" style="width: 40px">
+          <div class="h-6 text-2xs flex justify-center items-center flex-shrink-0"><%= line[:day] %>
+          <% if line[:day] == 1 %>
+            <%= line[:month_name] %>
+          <% end %>
+          </div>
+          <div class="h-6 text-2xs flex justify-center items-center flex-shrink-0"><%= line[:day_name] %></div>
+          <div class="<%= line[:is_weekend] ? 'bg-gray-300 hover:bg-gray-400' : 'hover:bg-gray-300' %>" style="height: <%= height %>"></div>
+        </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+window.addEventListener('load', function() {
+  var timeline = document.getElementById('timeline');
+  timeline.scrollLeft = timeline.scrollWidth - timeline.clientWidth;
+})
+window.onload
+</script>

@@ -2,6 +2,10 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+html {
+  font-size: 16px;
+}
+
 .border-b-yellow-400 {
   border-bottom-color: theme('colors.yellow.400');
 }

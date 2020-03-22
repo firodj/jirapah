@@ -13,11 +13,14 @@ class Story < ApplicationRecord
 
   ST_DONE = %w[12801].freeze
   ST_TODO = %w[10000 10401 10604].freeze
+  KD_EPIC = '10000'.freeze
 
   scope :assigned_to, ->(filter_members) { where("assignee_id in (?) or pair_assignee_id in (?)", filter_members, filter_members) }
   scope :unassigned_to, ->(filter_members) { where("assignee_id not in (?) or assignee_id is null", filter_members)
     .where("pair_assignee_id not in (?) or pair_assignee_id is null", filter_members) }
   scope :todo, -> { where(status_guid: ST_TODO) }
+  scope :not_todo, -> { where.not(status_guid: ST_TODO) }
+  scope :not_epic, -> { where.not(kind_guid: KD_EPIC) }
 
   def done?
     internal_status == :done
@@ -41,7 +44,7 @@ class Story < ApplicationRecord
 
   def internal_status
     case status_guid
-    when '10000', '10401', '10604'
+    when *ST_TODO
       :todo
     when '10704', '13800'
       :inprogress
