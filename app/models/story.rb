@@ -6,6 +6,7 @@ class Story < ApplicationRecord
   belongs_to :reporter, class_name: Member.to_s, optional: true
   belongs_to :qa_tester, class_name: Member.to_s, optional: true
   belongs_to :pair_assignee, class_name: Member.to_s, optional: true
+  belongs_to :epic, optional: true
   has_many :change_logs
   has_many :comments
 
@@ -40,6 +41,10 @@ class Story < ApplicationRecord
 
   def ready?
     internal_status == :ready
+  end
+
+  def epic?
+    kind_guid == KD_EPIC
   end
 
   def internal_status

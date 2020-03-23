@@ -71,7 +71,14 @@ class JiraImporter
     @myself ||= client.User.myself
   end
 
+  def field_name(fieldId)
+    @field_map = client.Field.map_fields.invert if @field_map.nil?
+    @field_map[fieldId]
+  end
+
   def process(issues)
+    epics = {}
+
     issues.each do |issue|
       story = Story.find_or_initialize_by(guid: issue.id)
 
@@ -79,7 +86,6 @@ class JiraImporter
         story.guid = issue.id
         story.key = issue.key
         story.summary = issue.summary
-        story.epic_link = issue.customfield_10008
         story.story_point = issue.customfield_10005
         story.changed_at = issue.updated
         story.posted_at = issue.created
@@ -116,13 +122,46 @@ class JiraImporter
           story.kind_guid = nil
         end
 
+        story.epic_link = issue.customfield_10008
         story.save!
 
         process_changelogs(issue) unless FIXME
       end
 
+      process_epic(issue) if story.epic?
+
+      if story.epic_link && story.epic.blank?
+        if epics[story.epic_link].nil?
+          epics[story.epic_link] = Epic.find_by_key(story.epic_link) || false
+        end
+        story.update(epic: epics[story.epic_link]) if epics[story.epic_link]
+      end
+
       process_comments(issue) unless FIXME
     end
+
+    epic_links = epics.delete_if { |k,v| v != false }.keys
+    process_epic_links(epic_links)
+  end
+
+  def process_epic_links(epic_links)
+    return if epic_links.empty?
+    issues = epic_links.map do |epic_link|
+      client.Issue.find(epic_link)
+    end
+    process(issues)
+  end
+
+  def process_epic(issue)
+    story = Story.find_by_guid!(issue.id)
+    epic = Epic.find_or_initialize_by(story_id: story.id)
+    return unless epic.new_record?
+
+    epic.title = issue.epic_name
+    epic.key = issue.key
+    epic.save!
+
+    Story.where(epic_link: story.key, epic_id: nil).update_all(epic_id: epic.id)
   end
 
   def process_comments(issue)

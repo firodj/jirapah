@@ -1,14 +1,14 @@
 <div class="h-screen flex flex-row overflow-auto">
-  <div id="leftside" class="w-2/12">
+  <div id="leftside" class="w-3/12">
     <div class="h-6"></div>
     <div class="h-6"></div>
     <% @cards.each do |card| %>
     <div class="box-border h-6 text-3xs flex-inline border-b overflow-hidden">
-      <span class="bg-teal-200">[<%= card[:key] %>]</span> <span><%= card[:summary] %></span>
+      <span class="bg-teal-200">[<%= card[:key] %>]</span><span class="bg-purple-200">[<%= card[:epic_link] %>]</span> <span><%= card[:summary] %></span>
     </div>
     <% end %>
   </div>
-  <div id="timeline" class="w-10/12 h-screen flex flex-col relative">
+  <div id="timeline" class="w-9/12 h-screen flex flex-col relative">
     <div id="items" class="absolute z-10">
       <div class="h-6"></div>
       <div class="h-6"></div>

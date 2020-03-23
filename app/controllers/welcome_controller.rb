@@ -1,9 +1,11 @@
 class WelcomeController < ApplicationController
   def index
+    epics
     columns
   end
 
   def timeline
+    epics
     cards
   end
 
@@ -18,45 +20,46 @@ class WelcomeController < ApplicationController
       @filter_members = members.map(&:id) & filter_members
     end
 
+    def epics
+      @epics ||= Epic.order(:name).all
+    end
+
     def columns
       return @columns unless @columns.nil?
 
       columns = []
 
-      if (filter_members.count > 0)
-        columns.push(
-          title: "Current",
-          stories: Story.includes(:assignee, :pair_assignee)
-            .not_epic
-            .assigned_to(filter_members)
-            .where.not(status_guid: Story::ST_DONE)
-            .order(changed_at: :desc).take(100)
-        )
-        columns.push(
-          title: "Done",
-          stories: Story.includes(:assignee, :pair_assignee)
-            .not_epic
-            .where(status_guid: Story::ST_DONE)
-            .assigned_to(filter_members)
-            .order(resolved_at: :desc).take(100)
-        )
+      if params[:epic]
+        epic = Epic.find(params[:epic])
+        current_stories = epic.stories
+        done_stories = epic.stories
       else
-        columns.push(
-          title: "Current",
-          stories: Story.includes(:assignee, :pair_assignee)
-            .not_epic
-            .where.not(status_guid: Story::ST_DONE)
-            .unassigned_to(members.map(&:id))
-            .order(changed_at: :desc).take(100)
-        )
-        columns.push(
-          title: "Done",
-          stories: Story.includes(:assignee, :pair_assignee)
-            .not_epic
-            .where(status_guid: Story::ST_DONE)
-            .order(resolved_at: :desc).take(100)
-        )
+        current_stories = Story.not_epic
+        done_stories = Story.not_epic
       end
+
+      current_stories = current_stories #includes(:assignee, :pair_assignee)
+        .where.not(status_guid: Story::ST_DONE)
+        .order(changed_at: :desc).limit(100)
+      done_stories = done_stories
+        .where(status_guid: Story::ST_DONE)
+        .order(resolved_at: :desc).limit(100)
+
+      if (filter_members.count > 0)
+        current_stories = current_stories.assigned_to(filter_members)
+        done_stories = done_stories.assigned_to(filter_members)
+      else
+        current_stories = current_stories.unassigned_to(members.map(&:id))
+      end
+
+      columns.push(
+        title: "Current",
+        stories: current_stories
+      )
+      columns.push(
+        title: "Done",
+        stories: done_stories
+      )
 
       @columns = columns
     end
@@ -67,10 +70,10 @@ class WelcomeController < ApplicationController
       today = Time.now.beginning_of_day
       starting =  today - 3.weeks
 
-      add_to_cells = ->(cells, time, params) {
+      add_to_cells = ->(cells, time, props) {
         if time && time >= starting
           d = ((time - starting) / 1.days).floor
-          cells[d] = (cells[d] || []).push(params)
+          cells[d] = (cells[d] || []).push(props)
         end
       }
 
@@ -85,22 +88,22 @@ class WelcomeController < ApplicationController
         }
       end
 
-      if (filter_members.count > 0)
-        stories = Story
-          .not_epic
-          .not_todo
-          .assigned_to(filter_members)
-          .where('(status_guid != ? and changed_at >= ?) or (status_guid = ? and resolved_at >= ?)',
-            Story::ST_DONE, starting, Story::ST_DONE, starting)
-          .order(posted_at: :asc)
+      if params[:epic]
+        epic = Epic.find(params[:epic])
+        stories = epic.stories
       else
-        stories = Story
-          .not_epic
-          .not_todo
-          .assigned_to(members.map(&:id))
-          .where('(status_guid != ? and changed_at >= ?) or (status_guid = ? and resolved_at >= ?)',
-            Story::ST_DONE, starting, Story::ST_DONE, starting)
-          .order(posted_at: :asc)
+        stories = Story.not_epic.not_todo
+      end
+
+      stories = stories
+        .where('(status_guid != ? and changed_at >= ?) or (status_guid = ? and resolved_at >= ?)',
+          Story::ST_DONE, starting, Story::ST_DONE, starting)
+        .order(posted_at: :asc)
+
+      if (filter_members.count > 0)
+        stories = stories.assigned_to(filter_members)
+      else
+        stories = stories.assigned_to(members.map(&:id))
       end
 
       @cards = stories.map do |story|
@@ -109,13 +112,14 @@ class WelcomeController < ApplicationController
         add_to_cells.call(cells, story.resolved_at, status: :resolved, names: story.assignee_names, color: 'green-400')
         add_to_cells.call(cells, story.changed_at, status: :updated, names: story.assignee_names, color: 'yellow-400')
         add_to_cells.call(cells, story.posted_at, status: :posted, names: story.reporter.name, color: 'blue-300')
-        story.change_logs.each do |change_log|
-          add_to_cells.call(cells, change_log.changed_at,
-            status: :changed, names: change_log.author.name, color: 'yellow-300')
-        end
+        #story.change_logs.each do |change_log|
+        #  add_to_cells.call(cells, change_log.changed_at,
+        #    status: :changed, names: change_log.author.name, color: 'yellow-300')
+        #end
 
         {
           key: story.key,
+          epic_link: story.epic_link,
           summary: story.clean_summary,
           cells: cells,
           order: [story.resolved_at.to_i || 0, story.posted_at.to_i]
