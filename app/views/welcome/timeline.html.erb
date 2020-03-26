@@ -4,7 +4,7 @@
     <div class="h-6"></div>
     <% @cards.each do |card| %>
     <div class="box-border h-6 text-3xs flex-inline border-b overflow-hidden">
-      <span class="bg-teal-200">[<%= card[:key] %>]</span><span class="bg-purple-200">[<%= card[:epic_link] %>]</span> <span><%= card[:summary] %></span>
+      <span class="bg-teal-200">[<%= card[:key] %>]</span><span class="bg-purple-200">[<%= card[:epic_title] %>]</span> <span><%= card[:summary] %></span>
     </div>
     <% end %>
   </div>

@@ -106,6 +106,7 @@ class WelcomeController < ApplicationController
         stories = stories.assigned_to(members.map(&:id))
       end
 
+      epic_titles = {}
       @cards = stories.map do |story|
         cells = {}
 
@@ -117,9 +118,11 @@ class WelcomeController < ApplicationController
         #    status: :changed, names: change_log.author.name, color: 'yellow-300')
         #end
 
+        epic_titles[story.epic_link] = story.epic ? story.epic.clean_title : '' if epic_titles[story.epic_link].nil?
+
         {
           key: story.key,
-          epic_link: story.epic_link,
+          epic_title: epic_titles[story.epic_link],
           summary: story.clean_summary,
           cells: cells,
           order: [story.resolved_at.to_i || 0, story.posted_at.to_i]

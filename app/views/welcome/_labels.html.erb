@@ -1,7 +1,7 @@
 <div class="p-0">
   <a href="<%= "%s/browse/%s" % [ENV['JIRA_HOST'], story.key] %>" target="_blank" class="inline-block rounded bg-teal-500 p-px m-0 text-3xs leading-none text-white font-bold"><%= story.key %></a>
 <% if story.epic_link %>
-  <a href="<%= "%s/browse/%s" % [ENV['JIRA_HOST'], story.epic_link] %>" target="_blank" class="inline-block rounded bg-indigo-500 p-px m-0 text-3xs leading-none text-white font-bold"><%= story.epic_link %></a>
+  <a href="<%= "%s/browse/%s" % [ENV['JIRA_HOST'], story.epic_link] %>" target="_blank" class="inline-block rounded bg-indigo-500 p-px m-0 text-3xs leading-none text-white font-bold"><%= story.epic ? story.epic.clean_title : epic_link %></a>
 <% end %>
 <% story.labels.each_with_index do |label, index| %>
   <a href="#" class="inline-block rounded border-purple-500 border p-px m-0 text-3xs leading-none text-purple-700 font-bold"><%= label %></a>
