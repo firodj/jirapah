@@ -1,4 +1,6 @@
-# README
+# Jirapah
+
+![Preview](docs/screen_20200327a.png?raw=true "Screen")
 
 This README would normally document whatever steps are necessary to get the
 application up and running.
