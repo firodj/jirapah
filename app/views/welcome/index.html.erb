@@ -21,3 +21,17 @@
   </div>
   <% end %>
 </div>
+
+<% if params[:demo] == 'true' %>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Faker/3.1.0/faker.min.js" type="text/javascript"></script>
+<script>
+var demoization = function() {
+  document.querySelectorAll("*[data-field=epic_name],*[data-field=story_tag]").forEach(function(el,index) { el.innerHTML = faker.random.word(); });
+  document.querySelectorAll("*[data-field=member_name]").forEach(function(el,index) { el.innerHTML = faker.name.findName(); });
+  document.querySelectorAll("*[data-field=story_summary]").forEach(function(el,index) { el.innerHTML = faker.lorem.sentence(); });
+};
+
+window.addEventListener('load', demoization);
+document.addEventListener('turbolinks:load', demoization);
+</script>
+<% end %>

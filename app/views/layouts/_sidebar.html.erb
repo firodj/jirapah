@@ -14,10 +14,10 @@
     <div class="text-xs flex items-center px-4">
       <% if @filter_members.include? member.id %>
         <span class="bg-green-500 rounded-full block w-2 h-2 mr-2"></span>
-        <a href="<%= url_for(filter_members: (@filter_members - [member.id]).join(','), epic: params[:epic]) %>" class="text-white opacity-75">
+        <a href="<%= url_for(filter_members: (@filter_members - [member.id]).join(','), epic: params[:epic]) %>" class="text-white opacity-75"  data-field="member_name">
       <% else %>
         <span class="border-white border rounded-full block w-2 h-2 mr-2"></span>
-        <a href="<%= url_for(filter_members: (@filter_members + [member.id]).join(','), epic: params[:epic]) %>" class="text-white opacity-75">
+        <a href="<%= url_for(filter_members: (@filter_members + [member.id]).join(','), epic: params[:epic]) %>" class="text-white opacity-75"  data-field="member_name">
       <% end %>
       <%= member.name %></a>
     </div>
@@ -49,7 +49,7 @@
       <% else %>
       <span class="border-white border rounded-full block w-2 h-2 mr-2"></span>
       <% end %>
-      <a href="<%= url_for(epic: epic.id, filter_members: @filter_members.join(',')) %>" class="text-white opacity-75">
+      <a href="<%= url_for(epic: epic.id, filter_members: @filter_members.join(',')) %>" class="text-white opacity-75" data-field="epic_name">
         <%= epic.clean_title %>
       </a>
     </div>
