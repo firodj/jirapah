@@ -9,6 +9,11 @@ Things you may want to cover:
 
 * Ruby version
 
+Install rbenv
+```
+$ brew install rbenv
+```
+
 * System dependencies
 
 * Configuration
@@ -22,5 +27,11 @@ Things you may want to cover:
 * Services (job queues, cache servers, search engines, etc.)
 
 * Deployment instructions
+
+The JIRA library has problem to get the `transitions` so that you may do:
+
+```
+curl -u $JIRA_USER:$JIRA_KEY -X GET $JIRA_HOST/rest/api/2/issue/$JIRA_ISSUE/transitions
+```
 
 * ...
