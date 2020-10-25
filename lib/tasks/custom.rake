@@ -2,9 +2,8 @@ namespace :custom do
   desc "Testing"
   task jira_test: :environment do
     svc = JiraImporter.new
-    isu1 = svc.client.Issue.find('GLB-5464')
-    isu2 =  svc.client.Issue.find('GLB-5509')
-    svc.process([isu1, isu2])
+    isu1 = svc.client.Issue.find("#{ENV['JIRA_PROJECT_KEY']}-17051", {:expand => [:transitions]})
+    # svc.process([isu1, isu2])
     binding.pry
   end
 

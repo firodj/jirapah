@@ -16,7 +16,17 @@ $ brew install rbenv
 
 * System dependencies
 
+```
+$ make setup
+```
+
 * Configuration
+
+```
+$ make config
+```
+
+Configure using `.env.local`.
 
 * Database creation
 
