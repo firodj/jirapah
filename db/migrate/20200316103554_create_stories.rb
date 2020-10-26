@@ -9,9 +9,9 @@ class CreateStories < ActiveRecord::Migration[6.0]
       t.references :reporter, foreign_key: {to_table: :members}
       t.references :assignee, foreign_key: {to_table: :members}
       t.references :creator, foreign_key: {to_table: :members}
-      t.references :pair_assignee, foreign_key: {to_table: :members}
-      t.references :qa_tester, foreign_key: {to_table: :members}
-      t.integer :story_point
+    #  t.references :pair_assignee, foreign_key: {to_table: :members}
+    #  t.references :qa_tester, foreign_key: {to_table: :members}
+      t.integer :story_points
       t.text :labels
       t.string :status
       t.string :status_guid

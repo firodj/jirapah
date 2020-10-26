@@ -4,8 +4,8 @@ class Story < ApplicationRecord
   belongs_to :creator, class_name: Member.to_s, optional: true
   belongs_to :assignee, class_name: Member.to_s, optional: true
   belongs_to :reporter, class_name: Member.to_s, optional: true
-  belongs_to :qa_tester, class_name: Member.to_s, optional: true
-  belongs_to :pair_assignee, class_name: Member.to_s, optional: true
+  #belongs_to :qa_tester, class_name: Member.to_s, optional: true
+  #belongs_to :pair_assignee, class_name: Member.to_s, optional: true
   belongs_to :epic, optional: true
   has_many :change_logs
   has_many :comments
@@ -16,9 +16,13 @@ class Story < ApplicationRecord
   ST_TODO = %w[10000 10401 10604].freeze
   KD_EPIC = '10000'.freeze
 
-  scope :assigned_to, ->(filter_members) { where("assignee_id in (?) or pair_assignee_id in (?)", filter_members, filter_members) }
+  #scope :assigned_to, ->(filter_members) { where("assignee_id in (?) or pair_assignee_id in (?)", filter_members, filter_members) }
+  #scope :unassigned_to, ->(filter_members) { where("assignee_id not in (?) or assignee_id is null", filter_members)
+  #  .where("pair_assignee_id not in (?) or pair_assignee_id is null", filter_members) }
+
+  scope :assigned_to, ->(filter_members) { where("assignee_id in (?)", filter_members) }
   scope :unassigned_to, ->(filter_members) { where("assignee_id not in (?) or assignee_id is null", filter_members)
-    .where("pair_assignee_id not in (?) or pair_assignee_id is null", filter_members) }
+
   scope :todo, -> { where(status_guid: ST_TODO) }
   scope :not_todo, -> { where.not(status_guid: ST_TODO) }
   scope :not_epic, -> { where.not(kind_guid: KD_EPIC) }
@@ -76,7 +80,7 @@ class Story < ApplicationRecord
     return @assignee_names unless @assignee_names.nil?
     names = []
     names.push(assignee.name) if assignee
-    names.push(pair_assignee.name) if pair_assignee
+    #names.push(pair_assignee.name) if pair_assignee
     @assignee_names = names.uniq
   end
 

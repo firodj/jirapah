@@ -2,7 +2,7 @@ namespace :custom do
   desc "Testing"
   task jira_test: :environment do
     svc = JiraImporter.new
-    isu1 = svc.client.Issue.find("#{ENV['JIRA_PROJECT_KEY']}-17051", {:expand => [:transitions]})
+    isu1 = svc.client.Issue.find("#{ENV['JIRA_PROJECT_KEY']}-14882", {:expand => [:transitions]})
     # svc.process([isu1, isu2])
     binding.pry
   end
@@ -22,11 +22,11 @@ namespace :custom do
 
     svc = JiraImporter.new
 
-    svc.chunk(project_keys: "GLB", resolved: false, updated_at: updated_at) do |issues|
+    svc.chunk(project_keys: ENV['JIRA_PROJECT_KEY'], resolved: false, updated_at: updated_at) do |issues|
       svc.process(issues)
     end
 
-    svc.chunk(project_keys: "GLB", resolved: true, updated_at: updated_at) do |issues|
+    svc.chunk(project_keys: ENV['JIRA_PROJECT_KEY'], resolved: true, updated_at: updated_at) do |issues|
       svc.process(issues)
     end
   end

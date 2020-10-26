@@ -58,9 +58,7 @@ ActiveRecord::Schema.define(version: 2020_03_23_031919) do
     t.integer "reporter_id"
     t.integer "assignee_id"
     t.integer "creator_id"
-    t.integer "pair_assignee_id"
-    t.integer "qa_tester_id"
-    t.integer "story_point"
+    t.integer "story_points"
     t.text "labels"
     t.string "status"
     t.string "status_guid"
@@ -75,8 +73,6 @@ ActiveRecord::Schema.define(version: 2020_03_23_031919) do
     t.index ["assignee_id"], name: "index_stories_on_assignee_id"
     t.index ["creator_id"], name: "index_stories_on_creator_id"
     t.index ["guid"], name: "index_stories_on_guid", unique: true
-    t.index ["pair_assignee_id"], name: "index_stories_on_pair_assignee_id"
-    t.index ["qa_tester_id"], name: "index_stories_on_qa_tester_id"
     t.index ["reporter_id"], name: "index_stories_on_reporter_id"
   end
 
@@ -86,7 +82,5 @@ ActiveRecord::Schema.define(version: 2020_03_23_031919) do
   add_foreign_key "epics", "stories"
   add_foreign_key "stories", "members", column: "assignee_id"
   add_foreign_key "stories", "members", column: "creator_id"
-  add_foreign_key "stories", "members", column: "pair_assignee_id"
-  add_foreign_key "stories", "members", column: "qa_tester_id"
   add_foreign_key "stories", "members", column: "reporter_id"
 end

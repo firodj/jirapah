@@ -86,14 +86,14 @@ class JiraImporter
         story.guid = issue.id
         story.key = issue.key
         story.summary = issue.summary
-        story.story_point = issue.customfield_10005
+        story.story_points = issue.story_points
         story.changed_at = issue.updated
         story.posted_at = issue.created
         story.creator = assign_member(issue.creator)
         story.reporter = assign_member(issue.reporter)
         story.assignee = assign_member(issue.assignee)
-        story.pair_assignee = assign_member(issue.pair_assignee) # customfield_11700
-        story.qa_tester = assign_member(issue.qa_tester) # customfield_11806
+        #story.pair_assignee = assign_member(issue.pair_assignee)
+        #story.qa_tester = assign_member(issue.qa_tester)
         story.project_guid = issue.project.key
         story.labels = issue.labels
         story.resolved_at = issue.resolutiondate
