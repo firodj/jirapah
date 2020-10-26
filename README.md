@@ -38,10 +38,16 @@ Configure using `.env.local`.
 
 * Deployment instructions
 
-The JIRA library has problem to get the `transitions` so that you may do:
+* ...
+
+To get `transitions` you may do:
 
 ```
 curl -u $JIRA_USER:$JIRA_KEY -X GET $JIRA_HOST/rest/api/2/issue/$JIRA_ISSUE/transitions
 ```
 
-* ...
+OR add `expand` option:
+
+```ruby
+client.Issue.find(JIRA_ISSUE, {:expand => [:transitions]})
+```

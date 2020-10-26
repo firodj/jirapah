@@ -21,7 +21,7 @@ class Story < ApplicationRecord
   #  .where("pair_assignee_id not in (?) or pair_assignee_id is null", filter_members) }
 
   scope :assigned_to, ->(filter_members) { where("assignee_id in (?)", filter_members) }
-  scope :unassigned_to, ->(filter_members) { where("assignee_id not in (?) or assignee_id is null", filter_members)
+  scope :unassigned_to, ->(filter_members) { where("assignee_id not in (?) or assignee_id is null", filter_members) }
 
   scope :todo, -> { where(status_guid: ST_TODO) }
   scope :not_todo, -> { where.not(status_guid: ST_TODO) }

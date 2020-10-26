@@ -31,6 +31,17 @@ class JiraImporter
     start_at = params[:start_at]
     resolved = params[:resolved] || false
     limit = params[:limit] || PAGING
+    issuetypes = params[:issuetypes] || %w(Story Task)
+    squadname = {
+      cf: ENV['CUSTOM_SQUAD_NAME'],
+      k: nil,
+      v: nil
+    }
+    if squadname[:cf]
+      squadname[:k] = squadname[:cf].split('_')[-1]
+      squadname[:v] = ENV['SQUAD_NAME']
+      raise ArgumentError, 'SQUAD_NAME is required' unless squadname[:v]
+    end
 
     updated_at = jira_tz(params[:updated_at]) if params[:updated_at]
     begin_date = jira_tz(BEGIN_DATE)
@@ -42,6 +53,8 @@ class JiraImporter
 
     jql = "project IN (#{project_keys.join(', ')})"
     jql += " AND labels IN (#{labels.join(', ')})" unless labels.empty?
+    jql += " AND issuetype IN (#{issuetypes.join(', ')})" unless issuetypes.empty?
+    jql += " AND cf[#{squadname[:k]}] = #{squadname[:v]}" if squadname[:v]
 
     jql += " AND resolution != Unresolved" if resolved
     jql += " AND resolution = Unresolved" unless resolved
