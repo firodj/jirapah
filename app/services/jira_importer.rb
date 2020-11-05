@@ -84,9 +84,13 @@ class JiraImporter
     @myself ||= client.User.myself
   end
 
-  def field_name(fieldId)
+  def field_map
     @field_map = client.Field.map_fields.invert if @field_map.nil?
-    @field_map[fieldId]
+    @field_map
+  end
+
+  def field_name(fieldId)
+    field_map[fieldId]
   end
 
   def process(issues)
