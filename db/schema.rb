@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_03_23_031919) do
+ActiveRecord::Schema.define(version: 2020_11_05_154620) do
 
   create_table "change_logs", force: :cascade do |t|
     t.string "guid"
@@ -49,6 +49,19 @@ ActiveRecord::Schema.define(version: 2020_03_23_031919) do
     t.index ["guid"], name: "index_members_on_guid", unique: true
   end
 
+  create_table "sprints", force: :cascade do |t|
+    t.string "guid"
+    t.string "name"
+    t.index ["guid"], name: "index_sprints_on_guid", unique: true
+  end
+
+  create_table "sprints_stories", force: :cascade do |t|
+    t.integer "sprint_id"
+    t.integer "story_id"
+    t.index ["sprint_id"], name: "index_sprints_stories_on_sprint_id"
+    t.index ["story_id"], name: "index_sprints_stories_on_story_id"
+  end
+
   create_table "stories", force: :cascade do |t|
     t.string "guid"
     t.string "key"
@@ -70,9 +83,13 @@ ActiveRecord::Schema.define(version: 2020_03_23_031919) do
     t.string "kind"
     t.string "kind_guid"
     t.integer "epic_id"
+    t.integer "parent_id"
+    t.string "parent_key"
+    t.string "parent_guid"
     t.index ["assignee_id"], name: "index_stories_on_assignee_id"
     t.index ["creator_id"], name: "index_stories_on_creator_id"
     t.index ["guid"], name: "index_stories_on_guid", unique: true
+    t.index ["parent_id"], name: "index_stories_on_parent_id"
     t.index ["reporter_id"], name: "index_stories_on_reporter_id"
   end
 
@@ -83,4 +100,5 @@ ActiveRecord::Schema.define(version: 2020_03_23_031919) do
   add_foreign_key "stories", "members", column: "assignee_id"
   add_foreign_key "stories", "members", column: "creator_id"
   add_foreign_key "stories", "members", column: "reporter_id"
+  add_foreign_key "stories", "stories", column: "parent_id"
 end

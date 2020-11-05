@@ -7,14 +7,19 @@ class Story < ApplicationRecord
   #belongs_to :qa_tester, class_name: Member.to_s, optional: true
   #belongs_to :pair_assignee, class_name: Member.to_s, optional: true
   belongs_to :epic, optional: true
+  belongs_to :sub_task, optional: true
   has_many :change_logs
   has_many :comments
+  has_many :sub_tasks, class_name: Story.to_s, foreign_key: "parent_id"
+  belongs_to :parent, class_name: Story.to_s, optional: true
+  has_and_belongs_to_many :sprints
 
   attribute :labels, :json
 
   ST_DONE = %w[12801].freeze
   ST_TODO = %w[10000 10401 10604].freeze
-  KD_EPIC = '10000'.freeze
+  KD_EPIC = 'Epic'.freeze
+  KD_SUB_TASK = 'Sub-task'.freeze
 
   #scope :assigned_to, ->(filter_members) { where("assignee_id in (?) or pair_assignee_id in (?)", filter_members, filter_members) }
   #scope :unassigned_to, ->(filter_members) { where("assignee_id not in (?) or assignee_id is null", filter_members)
@@ -25,7 +30,7 @@ class Story < ApplicationRecord
 
   scope :todo, -> { where(status_guid: ST_TODO) }
   scope :not_todo, -> { where.not(status_guid: ST_TODO) }
-  scope :not_epic, -> { where.not(kind_guid: KD_EPIC) }
+  scope :not_epic, -> { where.not(kind: KD_EPIC) }
 
   def done?
     internal_status == :done
@@ -48,7 +53,11 @@ class Story < ApplicationRecord
   end
 
   def epic?
-    kind_guid == KD_EPIC
+    kind == KD_EPIC
+  end
+
+  def sub_task?
+    kind == KD_SUB_TASK
   end
 
   def internal_status

@@ -139,13 +139,22 @@ class JiraImporter
           story.kind_guid = nil
         end
 
-        story.epic_link = issue.customfield_10008
+        story.epic_link = issue.epic_link
+
+        unless story.parent.blank?
+          story.parent_key = issue.parent["key"]
+          story.parent_guid = issue.parent["id"]
+          parent = Story.find_by_guid(story.parent_guid)
+          story.parent_id = parent.id if parent
+        end
+
         story.save!
 
         process_changelogs(issue) unless FIXME
       end
 
       process_epic(issue) if story.epic?
+      process_sprints(issue)
 
       if story.epic_link && story.epic.blank?
         if epics[story.epic_link].nil?
@@ -174,11 +183,25 @@ class JiraImporter
     epic = Epic.find_or_initialize_by(story_id: story.id)
     return unless epic.new_record?
 
-    epic.title = issue.epic_name
     epic.key = issue.key
     epic.save!
 
     Story.where(epic_link: story.key, epic_id: nil).update_all(epic_id: epic.id)
+  end
+
+  def process_sprints(issue)
+    return if issue.sprints.blank?
+
+    sprint_ids = []
+    issue.sprints.each { |hash_sprint|
+      sprint = Sprint.find_or_initialize_by(guid: hash_sprint['id'])
+      sprint.name = hash_sprint['name']
+      sprint.save! if sprint.new_record?
+      sprint_ids.push(sprint.id)
+    }
+
+    story = Story.find_by_guid!(issue.id)
+    story.sprint_ids = sprint_ids
   end
 
   def process_comments(issue)

@@ -11,6 +11,7 @@ JIRA::Resource::Issue.class_eval {
   #                        nested_under: 'fields',
   #                        attribute_key: 'customfield_11806'
   has_one :resolution,    nested_under: 'fields'
+  has_one :parent,        class: JIRA::Resource::Issue, nested_under: 'fields'
 
   def epic_link
     @attrs['fields'][ENV['CUSTOM_EPIC_LINK']] if @attrs && @attrs['fields']
