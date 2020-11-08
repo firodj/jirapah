@@ -57,15 +57,81 @@ namespace :custom do
     jql += " AND issuetype IN (#{issuetypes.join(', ')})"
     jql += " ORDER BY updated ASC, id ASC"
 
+    stories = {}
+    subtasks = {}
 
     svc.chunk_jql(jql) do |issues|
       issues.each { |isu|
-        row = [ isu.issuetype.name, isu.parent.present? ? isu.parent.key : nil, isu.key, isu.summary, isu.story_points, isu.status.name]
-        puts row.to_csv
+        if %w(Story Task).include? isu.issuetype.name then
+          stories[isu.key] = {
+            type: isu.issuetype.name,
+            key: isu.key,
+            title: isu.summary,
+            story_points: isu.story_points,
+            status: isu.status.name,
+            subtasks: isu.subtasks.map { |x| x["key"] },
+          }
+        else
+          subtasks[isu.key] = {
+            type: isu.issuetype.name,
+            key: isu.key,
+            parent_key: isu.parent.key,
+            title: isu.summary,
+            story_points: nil,
+            status: isu.status.name,
+          }
+        end
       }
     end
 
-    binding.pry
+    status_to_points = -> (s, p) {
+      n = nil
+      case s
+      when "Invalid"
+      when "To Do"
+        n = 0
+      when "In Progress"
+        n = 1
+      when "In Review"
+        n = 2
+      when "Ready for Staging"
+        n = 3
+      when "Test in Staging"
+        n = 3
+      when "Staging Verified"
+        n = 4
+      when "Product Verified"
+        n = 5
+      when "Done"
+        n = 6
+      else
+        raise "Unhandled status #{s}"
+      end
+
+      sp = Array.new(7) { |x| nil }
+      sp[n] = p unless n.nil?
+      return sp
+    }
+
+    puts %w(key sub-key title type status points sub-points to-do in-progress in-review testing staging-verified product-verified done).to_csv
+    stories.each { |key, story|
+      rest_subtasks = story[:subtasks].map { |subkey| subtasks[subkey] }.reject { |x| x[:status] == "Invalid" }
+
+      if rest_subtasks.count > 0
+        a = [story[:key], nil, story[:title], story[:type], story[:status], story[:story_points], 0]
+        puts a.to_csv
+        story_points = story[:story_points]/rest_subtasks.count.to_f
+        rest_subtasks.each { |subtask|
+          a = [nil, subtask[:key], subtask[:title], subtask[:type], subtask[:status], 0, story_points ] + status_to_points.call(subtask[:status], story_points)
+          puts a.to_csv
+        }
+      else
+        a = [story[:key], nil, story[:title], story[:type], story[:status], story[:story_points], story[:story_points]] + status_to_points.call(story[:status], story[:story_points])
+        puts a.to_csv
+      end
+    }
+
+    # binding.pry
   end
 
 end
