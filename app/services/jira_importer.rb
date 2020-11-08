@@ -1,5 +1,5 @@
 class JiraImporter
-  PAGING = 100.freeze
+  PAGING = 10.freeze
   BEGIN_DATE = '2020-01-01T00:00:00.000+0700'.freeze
   FIXME = false.freeze
 
@@ -27,9 +27,32 @@ class JiraImporter
     end
   end
 
+  def chunk_jql(jql)
+    prev_issue = nil
+    start_at = 0
+    limit = PAGING + 1
+    cache_key = Digest::SHA1.hexdigest jql
+    loop do
+      issues = Rails.cache.fetch("Jql/#{cache_key}/#{start_at}/#{limit}", expires_in: 30.minutes) do
+        client.Issue.jql(jql, start_at: start_at, max_results: limit)
+      end
+
+      break unless issues.count
+
+      raise 'Paging disorder' if prev_issue.present? and prev_issue.id != issues[0].id
+
+      yield issues[0..PAGING-1]
+
+      break if issues.count <= PAGING
+
+      prev_issue = issues[-1]
+      start_at += PAGING
+    end
+  end
+
   def search(params)
     start_at = params[:start_at]
-    resolved = params[:resolved] || false
+    # resolved = params[:resolved] || false
     limit = params[:limit] || PAGING
     issuetypes = params[:issuetypes] || %w(Story Task)
     squadname = {
@@ -37,10 +60,22 @@ class JiraImporter
       k: nil,
       v: nil
     }
+    sprintsname = {
+      cf: ENV['CUSTOM_SPRINTS'],
+      k: nil,
+      v: nil
+    }
+
     if squadname[:cf]
       squadname[:k] = squadname[:cf].split('_')[-1]
       squadname[:v] = ENV['SQUAD_NAME']
       raise ArgumentError, 'SQUAD_NAME is required' unless squadname[:v]
+    end
+
+    if sprintsname[:cf]
+      sprintsname[:k] = sprintsname[:cf].split('_')[-1]
+      sprintsname[:v] = ENV['SPRINTS_NAME']
+      raise ArgumentError, 'SPRINTS_NAME is required' unless sprintsname[:v]
     end
 
     updated_at = jira_tz(params[:updated_at]) if params[:updated_at]
@@ -55,9 +90,10 @@ class JiraImporter
     jql += " AND labels IN (#{labels.join(', ')})" unless labels.empty?
     jql += " AND issuetype IN (#{issuetypes.join(', ')})" unless issuetypes.empty?
     jql += " AND cf[#{squadname[:k]}] = #{squadname[:v]}" if squadname[:v]
+    jql += " AND cf[#{sprintsname[:k]}] = #{sprintsname[:v]}" if sprintsname[:v]
 
-    jql += " AND resolution != Unresolved" if resolved
-    jql += " AND resolution = Unresolved" unless resolved
+    # jql += " AND resolution != Unresolved" if resolved
+    # jql += " AND resolution = Unresolved" unless resolved
 
     jql += " AND created >= '#{begin_date}'" unless updated_at
     jql += " AND updated >= '#{updated_at}'" if updated_at
@@ -95,6 +131,8 @@ class JiraImporter
 
   def process(issues)
     epics = {}
+    subtask_keys = []
+    fetch_subtask_keys = []
 
     issues.each do |issue|
       story = Story.find_or_initialize_by(guid: issue.id)
@@ -143,9 +181,13 @@ class JiraImporter
 
         unless story.parent.blank?
           story.parent_key = issue.parent["key"]
-          story.parent_guid = issue.parent["id"]
+          # story.parent_guid = issue.parent["id"]
           parent = Story.find_by_guid(story.parent_guid)
           story.parent_id = parent.id if parent
+        end
+
+        if story.sub_task?
+          fetch_subtask_keys.push(issue.key)
         end
 
         story.save!
@@ -155,6 +197,11 @@ class JiraImporter
 
       process_epic(issue) if story.epic?
       process_sprints(issue)
+
+      if issue.subtasks.present?
+        keys = issue.subtasks.map { |hash_subtask| hash_subtask['key'] }
+        subtask_keys = subtask_keys.concat(keys).uniq
+      end
 
       if story.epic_link && story.epic.blank?
         if epics[story.epic_link].nil?
@@ -168,6 +215,12 @@ class JiraImporter
 
     epic_links = epics.delete_if { |k,v| v != false }.keys
     process_epic_links(epic_links)
+
+    issues = []
+    (subtask_keys - fetch_subtask_keys).each do |subtask_key|
+      issues.push(client.Issue.find(subtask_key)) unless Story.find_by_key(subtask_key)
+    end
+    process(issues)
   end
 
   def process_epic_links(epic_links)
@@ -202,6 +255,11 @@ class JiraImporter
 
     story = Story.find_by_guid!(issue.id)
     story.sprint_ids = sprint_ids
+  end
+
+  def process_subtasks(issue)
+    return [] if issue.subtasks.blank?
+    issue.subtasks.map { |hash_subtask| hash_subtask['id'] }
   end
 
   def process_comments(issue)

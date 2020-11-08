@@ -38,4 +38,34 @@ namespace :custom do
       puts "#{k}\t#{v}"
     }
   end
+
+  desc "Daily report"
+  task daily: :environment do
+    svc = JiraImporter.new
+    board =
+      Rails.cache.fetch("Board/#{ENV['SQUAD_NAME']}", expires_in: 30.minutes) do
+        svc.client.Board.all.find { |x| x.name.include? ENV['SQUAD_NAME'] }
+      end
+
+    sprint =
+      Rails.cache.fetch("Board/#{board.id}/active-sprint", expires_in: 30.minutes) do
+        board.sprints.find { |x| x.state == 'active' }
+      end
+
+    issuetypes = %w(Story Task Sub-task)
+    jql = "sprint = #{sprint.id}"
+    jql += " AND issuetype IN (#{issuetypes.join(', ')})"
+    jql += " ORDER BY updated ASC, id ASC"
+
+
+    svc.chunk_jql(jql) do |issues|
+      issues.each { |isu|
+        row = [ isu.issuetype.name, isu.parent.present? ? isu.parent.key : nil, isu.key, isu.summary, isu.story_points, isu.status.name]
+        puts row.to_csv
+      }
+    end
+
+    binding.pry
+  end
+
 end

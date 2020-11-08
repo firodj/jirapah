@@ -28,6 +28,12 @@ $ make config
 
 Configure using `.env.local`.
 
+Enable dev cache
+
+```
+$ bin/rails dev:cache
+```
+
 * Database creation
 
 * Database initialization
