@@ -120,7 +120,7 @@ namespace :custom do
       if rest_subtasks.count > 0
         a = [story[:key], nil, story[:title], story[:type], story[:status], story[:story_points], 0]
         puts a.to_csv
-        story_points = story[:story_points]/rest_subtasks.count.to_f
+        story_points = (story[:story_points] || 0) / rest_subtasks.count.to_f
         rest_subtasks.each { |subtask|
           a = [nil, subtask[:key], subtask[:title], subtask[:type], subtask[:status], 0, story_points ] + status_to_points.call(subtask[:status], story_points)
           puts a.to_csv
