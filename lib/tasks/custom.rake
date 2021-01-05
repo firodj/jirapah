@@ -115,6 +115,7 @@ namespace :custom do
 
     puts %w(key sub-key title type status points sub-points to-do in-progress in-review testing staging-verified product-verified done).to_csv
     stories.each { |key, story|
+      next if story[:status] == "Invalid"
       rest_subtasks = story[:subtasks].map { |subkey| subtasks[subkey] }.reject { |x| x[:status] == "Invalid" }
 
       if rest_subtasks.count > 0
