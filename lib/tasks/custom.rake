@@ -47,42 +47,54 @@ namespace :custom do
         svc.client.Board.all.find { |x| x.name.include? ENV['SQUAD_NAME'] }
       end
 
-    sprint =
-      Rails.cache.fetch("Board/#{board.id}/active-sprint", expires_in: 30.minutes) do
-        board.sprints.find { |x| x.state == 'active' }
+    sprints =
+      Rails.cache.fetch("Board/#{board.id}/active-sprints", expires_in: 30.minutes) do
+        board.sprints.select { |x| x.state == 'active' }
       end
-
-    issuetypes = %w(Story Task Sub-task)
-    jql = "sprint = #{sprint.id}"
-    jql += " AND issuetype IN (#{issuetypes.join(', ')})"
-    jql += " ORDER BY updated ASC, id ASC"
 
     stories = {}
     subtasks = {}
 
-    svc.chunk_jql(jql) do |issues|
-      issues.each { |isu|
-        if %w(Story Task).include? isu.issuetype.name then
-          stories[isu.key] = {
-            type: isu.issuetype.name,
-            key: isu.key,
-            title: isu.summary,
-            story_points: isu.story_points,
-            status: isu.status.name,
-            subtasks: isu.subtasks.map { |x| x["key"] },
-          }
-        else
-          subtasks[isu.key] = {
-            type: isu.issuetype.name,
-            key: isu.key,
-            parent_key: isu.parent.key,
-            title: isu.summary,
-            story_points: nil,
-            status: isu.status.name,
-          }
-        end
-      }
-    end
+    sprints.each { |sprint|
+      issuetypes = %w(Story Task Sub-task)
+      jql = "sprint = #{sprint.id}"
+      jql += " AND issuetype IN (#{issuetypes.join(', ')})"
+      jql += " ORDER BY updated ASC, id ASC"
+
+      svc.chunk_jql(jql) do |issues|
+        issues.each { |isu|
+          if %w(Story Task).include? isu.issuetype.name then
+            if stories.key?(isu.key) then
+              stories[isu.key][:sprints].push(sprint.name)
+            else
+              stories[isu.key] = {
+                type: isu.issuetype.name,
+                key: isu.key,
+                title: isu.summary,
+                story_points: isu.story_points,
+                status: isu.status.name,
+                subtasks: isu.subtasks.map { |x| x["key"] },
+                sprints: [sprint.name],
+              }
+            end
+          else
+            if subtasks.key?(isu.key) then
+              subtasks[isu.key][:sprints].push(sprint.name)
+            else
+              subtasks[isu.key] = {
+                type: isu.issuetype.name,
+                key: isu.key,
+                parent_key: isu.parent.key,
+                title: isu.summary,
+                story_points: nil,
+                status: isu.status.name,
+                sprints: [sprint.name],
+              }
+            end
+          end
+        }
+      end
+    }
 
     status_to_points = -> (s, p) {
       n = nil
@@ -113,21 +125,21 @@ namespace :custom do
       return sp
     }
 
-    puts %w(key sub-key title type status points sub-points to-do in-progress in-review testing staging-verified product-verified done).to_csv
+    puts %w(key sub-key sprints title type status points sub-points to-do in-progress in-review testing staging-verified product-verified done).to_csv
     stories.each { |key, story|
       next if story[:status] == "Invalid"
       rest_subtasks = story[:subtasks].map { |subkey| subtasks[subkey] }.reject { |x| x[:status] == "Invalid" }
 
       if rest_subtasks.count > 0
-        a = [story[:key], nil, story[:title], story[:type], story[:status], story[:story_points], 0]
+        a = [story[:key], nil, story[:sprints].join(", "), story[:title], story[:type], story[:status], story[:story_points], 0]
         puts a.to_csv
         story_points = (story[:story_points] || 0) / rest_subtasks.count.to_f
         rest_subtasks.each { |subtask|
-          a = [nil, subtask[:key], subtask[:title], subtask[:type], subtask[:status], 0, story_points ] + status_to_points.call(subtask[:status], story_points)
+          a = [nil, subtask[:key], subtask[:sprints].join(", "), subtask[:title], subtask[:type], subtask[:status], 0, story_points ] + status_to_points.call(subtask[:status], story_points)
           puts a.to_csv
         }
       else
-        a = [story[:key], nil, story[:title], story[:type], story[:status], story[:story_points], story[:story_points]] + status_to_points.call(story[:status], story[:story_points])
+        a = [story[:key], nil, story[:sprints].join(", "), story[:title], story[:type], story[:status], story[:story_points], story[:story_points]] + status_to_points.call(story[:status], story[:story_points])
         puts a.to_csv
       end
     }
