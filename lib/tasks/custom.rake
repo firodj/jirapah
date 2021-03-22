@@ -54,12 +54,14 @@ namespace :custom do
 
     stories = {}
     subtasks = {}
+    totals = {}
 
     sprints.each { |sprint|
       issuetypes = %w(Story Task Sub-task)
       jql = "sprint = #{sprint.id}"
       jql += " AND issuetype IN (#{issuetypes.join(', ')})"
       jql += " ORDER BY updated ASC, id ASC"
+      totals[sprint.name] = Array.new(7) { |x| 0 }
 
       svc.chunk_jql(jql) do |issues|
         issues.each { |isu|
@@ -125,6 +127,14 @@ namespace :custom do
       return sp
     }
 
+    points_totals = -> (sprints, sp) {
+      sprints.each { |sprint_name|
+        totals[sprint_name].each_with_index { |val,index|
+          totals[sprint_name][index] += sp[index] || 0
+        }
+      }
+    }
+
     puts %w(key sub-key sprints title type status points sub-points to-do in-progress in-review testing staging-verified product-verified done).to_csv
     stories.each { |key, story|
       next if story[:status] == "Invalid"
@@ -135,13 +145,41 @@ namespace :custom do
         puts a.to_csv
         story_points = (story[:story_points] || 0) / rest_subtasks.count.to_f
         rest_subtasks.each { |subtask|
-          a = [nil, subtask[:key], subtask[:sprints].join(", "), subtask[:title], subtask[:type], subtask[:status], 0, story_points ] + status_to_points.call(subtask[:status], story_points)
+          pts = status_to_points.call(subtask[:status], story_points)
+          a = [nil, subtask[:key], subtask[:sprints].join(", "), subtask[:title], subtask[:type], subtask[:status], 0, story_points ] + pts
           puts a.to_csv
+          points_totals.call(subtask[:sprints], pts)
         }
       else
-        a = [story[:key], nil, story[:sprints].join(", "), story[:title], story[:type], story[:status], story[:story_points], story[:story_points]] + status_to_points.call(story[:status], story[:story_points])
+        pts = status_to_points.call(story[:status], story[:story_points])
+        a = [story[:key], nil, story[:sprints].join(", "), story[:title], story[:type], story[:status], story[:story_points], story[:story_points]] + pts
         puts a.to_csv
+        points_totals.call(story[:sprints], pts)
       end
+    }
+
+    puts [].to_csv
+
+    rows = [%w(sprint points to-do in-progress in-review testing staging-verified product-verified done)]
+    totals.each { |key, totals|
+
+      tots = totals.inject(0){|sum,x| sum + x }
+      a = [nil, nil, key, nil, 'Total', nil, tots, nil] + totals
+      rows.push( [key, tots] + totals )
+      puts a.to_csv
+    }
+
+    puts [].to_csv
+
+    x = rows.count
+    y = rows[0].count
+
+    (1..y).each { |index_y|
+      cols = []
+      (1..x).each { |index_x|
+        cols.push( rows[index_x-1][index_y-1] )
+      }
+      puts cols.to_csv
     }
 
     # binding.pry

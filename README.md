@@ -55,5 +55,6 @@ curl -u $JIRA_USER:$JIRA_KEY -X GET $JIRA_HOST/rest/api/2/issue/$JIRA_ISSUE/tran
 OR add `expand` option:
 
 ```ruby
-client.Issue.find(JIRA_ISSUE, {:expand => [:transitions]})
+svc = JiraImporter.new
+svc.client.Issue.find(JIRA_ISSUE, {:expand => [:transitions]})
 ```
