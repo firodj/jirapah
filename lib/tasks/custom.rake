@@ -55,6 +55,7 @@ namespace :custom do
     stories = {}
     subtasks = {}
     totals = {}
+    epics = {}
 
     sprints.each { |sprint|
       issuetypes = %w(Story Task Sub-task)
@@ -77,7 +78,11 @@ namespace :custom do
                 status: isu.status.name,
                 subtasks: isu.subtasks.map { |x| x["key"] },
                 sprints: [sprint.name],
+                epic: isu.epic_link,
               }
+              if isu.epic_link && !epics.key?(isu.epic_link)
+                epics[isu.epic_link] = false
+              end
             end
           else
             if subtasks.key?(isu.key) then
@@ -91,11 +96,22 @@ namespace :custom do
                 story_points: nil,
                 status: isu.status.name,
                 sprints: [sprint.name],
+                epic: isu.epic_link,
               }
+              if isu.epic_link && !epics.key?(isu.epic_link)
+                epics[isu.epic_link] = False
+              end
             end
           end
         }
       end
+    }
+
+    epics.each_key { |key|
+      epics[key] =
+        Rails.cache.fetch("Epic/#{key}", expires_in: 30.minutes) do
+          svc.client.Issue.find(key)
+        end
     }
 
     status_to_points = -> (s, p) {
@@ -135,24 +151,32 @@ namespace :custom do
       }
     }
 
-    puts %w(key sub-key sprints title type status points sub-points to-do in-progress in-review testing staging-verified product-verified done).to_csv
+    puts %w(key sub-key epic sprints title type status points sub-points to-do in-progress in-review testing staging-verified product-verified done).to_csv
     stories.each { |key, story|
       next if story[:status] == "Invalid"
       rest_subtasks = story[:subtasks].map { |subkey| subtasks[subkey] }.reject { |x| x[:status] == "Invalid" }
 
       if rest_subtasks.count > 0
-        a = [story[:key], nil, story[:sprints].join(", "), story[:title], story[:type], story[:status], story[:story_points], 0]
+        epic_name = story[:epic]
+        if epics[story[:epic]]
+          epic_name += " - " + epics[story[:epic]].summary
+        end
+        a = [story[:key], nil, epic_name, story[:sprints].join(", "), story[:title], story[:type], story[:status], story[:story_points], 0]
         puts a.to_csv
         story_points = (story[:story_points] || 0) / rest_subtasks.count.to_f
         rest_subtasks.each { |subtask|
           pts = status_to_points.call(subtask[:status], story_points)
-          a = [nil, subtask[:key], subtask[:sprints].join(", "), subtask[:title], subtask[:type], subtask[:status], 0, story_points ] + pts
+          a = [nil, subtask[:key], nil, subtask[:sprints].join(", "), subtask[:title], subtask[:type], subtask[:status], 0, story_points ] + pts
           puts a.to_csv
           points_totals.call(subtask[:sprints], pts)
         }
       else
+        epic_name = story[:epic]
+        if epics[story[:epic]]
+          epic_name += " - " + epics[story[:epic]].summary
+        end
         pts = status_to_points.call(story[:status], story[:story_points])
-        a = [story[:key], nil, story[:sprints].join(", "), story[:title], story[:type], story[:status], story[:story_points], story[:story_points]] + pts
+        a = [story[:key], nil, epic_name, story[:sprints].join(", "), story[:title], story[:type], story[:status], story[:story_points], story[:story_points]] + pts
         puts a.to_csv
         points_totals.call(story[:sprints], pts)
       end
@@ -161,11 +185,11 @@ namespace :custom do
     puts [].to_csv
 
     rows = [%w(sprint points to-do in-progress in-review testing staging-verified product-verified done)]
-    totals.each { |key, totals|
+    totals.each { |sprint_name, totals|
 
       tots = totals.inject(0){|sum,x| sum + x }
-      a = [nil, nil, key, nil, 'Total', nil, tots, nil] + totals
-      rows.push( [key, tots] + totals )
+      a = [nil, nil, nil, sprint_name, nil, 'Total', nil, tots, nil] + totals
+      rows.push( [sprint_name, tots] + totals )
       puts a.to_csv
     }
 
