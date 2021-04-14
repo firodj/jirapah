@@ -41,10 +41,22 @@ namespace :custom do
 
   desc "Daily report"
   task daily: :environment do
+    raise StandardError.new "missing JIRA_PROJECT_KEY" if ENV['JIRA_PROJECT_KEY'].blank?
+    raise StandardError.new "missing BOARD_NAME" if ENV['BOARD_NAME'].blank?
+
     svc = JiraImporter.new
     board =
-      Rails.cache.fetch("Board/#{ENV['SQUAD_NAME']}", expires_in: 30.minutes) do
-        svc.client.Board.all.find { |x| x.name.include? ENV['SQUAD_NAME'] }
+      Rails.cache.fetch("Board/#{ENV['JIRA_PROJECT_KEY']}/#{ENV['BOARD_NAME']}", expires_in: 30.minutes) do
+        svc.client.Board.all.find { |x|
+          if x.name.include?(ENV['BOARD_NAME']) then
+            prj = Rails.cache.fetch("Board/#{x.id}/project", expires_in: 30.minutes) do
+              x.project
+            end
+            prj['key'] == ENV['JIRA_PROJECT_KEY']
+          else
+            false
+          end
+        }
       end
 
     sprints =

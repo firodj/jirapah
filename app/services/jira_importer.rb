@@ -55,22 +55,22 @@ class JiraImporter
     # resolved = params[:resolved] || false
     limit = params[:limit] || PAGING
     issuetypes = params[:issuetypes] || %w(Story Task)
-    squadname = {
-      cf: ENV['CUSTOM_SQUAD_NAME'],
-      k: nil,
-      v: nil
-    }
+    #SQUAD: squadname = {
+    #  cf: ENV['CUSTOM_SQUAD_NAME'],
+    #  k: nil,
+    #  v: nil
+    #}
     sprintsname = {
       cf: ENV['CUSTOM_SPRINTS'],
       k: nil,
       v: nil
     }
 
-    if squadname[:cf]
-      squadname[:k] = squadname[:cf].split('_')[-1]
-      squadname[:v] = ENV['SQUAD_NAME']
-      raise ArgumentError, 'SQUAD_NAME is required' unless squadname[:v]
-    end
+    #SQUAD: if squadname[:cf]
+    #  squadname[:k] = squadname[:cf].split('_')[-1]
+    #  squadname[:v] = ENV['SQUAD_NAME']
+    #  raise ArgumentError, 'SQUAD_NAME is required' unless squadname[:v]
+    #end
 
     if sprintsname[:cf]
       sprintsname[:k] = sprintsname[:cf].split('_')[-1]
@@ -89,7 +89,7 @@ class JiraImporter
     jql = "project IN (#{project_keys.join(', ')})"
     jql += " AND labels IN (#{labels.join(', ')})" unless labels.empty?
     jql += " AND issuetype IN (#{issuetypes.join(', ')})" unless issuetypes.empty?
-    jql += " AND cf[#{squadname[:k]}] = #{squadname[:v]}" if squadname[:v]
+    #SQUAD: jql += " AND cf[#{squadname[:k]}] = #{squadname[:v]}" if squadname[:v]
     jql += " AND cf[#{sprintsname[:k]}] = #{sprintsname[:v]}" if sprintsname[:v]
 
     # jql += " AND resolution != Unresolved" if resolved
