@@ -142,17 +142,13 @@ namespace :custom do
         n = 3
       when "Test in Staging"
         n = 3
-      when "Staging Verified"
-        n = 4
-      when "Product Verified"
-        n = 5
       when "Done"
-        n = 6
+        n = 4
       else
         raise "Unhandled status #{s}"
       end
 
-      sp = Array.new(7) { |x| nil }
+      sp = Array.new(5) { |x| nil }
       sp[n] = p unless n.nil?
       return sp
     }
@@ -165,7 +161,7 @@ namespace :custom do
       }
     }
 
-    puts %w(key sub-key epic sprints assignee title type status points sub-points to-do in-progress in-review testing staging-verified product-verified done).to_csv
+    puts %w(key sub-key epic sprints assignee title type status points sub-points to-do in-progress in-review testing done).to_csv
     stories.each { |key, story|
       next if story[:status] == "Invalid"
       rest_subtasks = story[:subtasks].map { |subkey| subtasks[subkey] }.reject { |x| x[:status] == "Invalid" }
@@ -198,11 +194,10 @@ namespace :custom do
 
     puts [].to_csv
 
-    rows = [%w(sprint points to-do in-progress in-review testing staging-verified product-verified done)]
+    rows = [%w(sprint points to-do in-progress in-review testing done)]
     totals.each { |sprint_name, totals|
-
       tots = totals.inject(0){|sum,x| sum + x }
-      a = [nil, nil, nil, sprint_name, nil, 'Total', nil, tots, nil] + totals
+      a = [nil, nil, nil, sprint_name, nil, 'Total', nil, nil, tots, nil] + totals
       rows.push( [sprint_name, tots] + totals )
       puts a.to_csv
     }
